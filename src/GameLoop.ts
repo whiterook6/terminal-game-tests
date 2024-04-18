@@ -11,16 +11,26 @@ export class GameLoop {
         this.update = callback;
     }
 
-    public togglePause = (): void => {
-        if (this.isPaused){
+    public start = () => {
+        if (this.isPaused || !this.intervalID){
             this.paused = false;
             this.intervalID = setInterval(this.gameLoop, GameLoop.tickLengthMs);
+        }
+    }
+
+    public stop = () => {
+        this.paused = true;
+        if (this.intervalID){
+            clearInterval(this.intervalID);
+            this.intervalID = undefined;
+        }
+    }
+
+    public togglePause = (): void => {
+        if (this.isPaused){
+            this.start();
         } else {
-            this.paused = true;
-            if (this.intervalID){
-                clearInterval(this.intervalID);
-                this.intervalID = undefined;
-            }
+            this.stop();
         }
     }
 
