@@ -117,7 +117,14 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.20.2.tgz#9c907b21e30a52db959ba4f80bb01a0cc403d5cc"
   integrity sha512-N49X4lJX27+l9jbLKSqZ6bKNjzQvHaT8IIFUy+YIqmXQdjYCToGWwOItDrfby14c78aDd5NHQl29xingXfCdLQ==
 
-"@types/node@^20.12.7":
+"@types/ansi@^0.3.1":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@types/ansi/-/ansi-0.3.6.tgz#8c1a327d324aff689bddf7ba6c744ce09443f321"
+  integrity sha512-UWoYbaDbPgpBuEeNY+IxuH6+TmVrv9RSggQUlA2DwmQKDXwxImj53Mpd1K/Hq9WrKEhrohc4qEpc42npD4lSdw==
+  dependencies:
+    "@types/node" "*"
+
+"@types/node@*", "@types/node@^20.12.7":
   version "20.12.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.7.tgz#04080362fa3dd6c5822061aa3124f5c152cff384"
   integrity sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==

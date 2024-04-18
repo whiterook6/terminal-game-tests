@@ -24,6 +24,7 @@ const run = async () => {
         minify: false,
         sourcemap: true,
         outfile: "output/index.js",
+        platform: "node",
     });
     
     return context.watch();

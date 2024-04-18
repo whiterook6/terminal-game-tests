@@ -24,6 +24,7 @@ const run = async () => {
         minify: true,
         sourcemap: false,
         outfile: "output/index.js",
+        platform: "node",
     });
 };
 
