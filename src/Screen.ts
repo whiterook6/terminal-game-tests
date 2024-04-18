@@ -1,15 +1,32 @@
-export interface IScreenCoords {
-    x: number;
-    y: number;
-}
+export type ScreenXY = {
+    screenX: number;
+    screenY: number;
+};
+
+export type WorldXY = {
+    worldX: number;
+    worldY: number;
+};
+
+export type OffsetXY = {
+    offsetX: number;
+    offsetY: number;
+};
+
+export const MAX_ZOOM = 8;
+export const MIN_ZOOM = 1/8;
 
 export class Screen {
     private columns: number;
     private rows: number;
-    private xOffset: number = 0;
-    private yOffset: number = 0;
+    private offset: OffsetXY = {
+        offsetX: 0,
+        offsetY: 0
+    };
 
-    /* Smaller Zoom means smaller things, so a wider view. Larger zoom means closer in. */
+    /**
+     * Smaller Zoom means smaller things closer together on screen, so a wider view, like the view from a satellite. Larger zoom means larger things farther apart on screen, so a narrower view, like the view from a drone.
+     */
     private zoom: number = 1;
 
     constructor(){
@@ -22,39 +39,98 @@ export class Screen {
         process.stdout.removeListener("resize", this.onResize);
     }
 
-    public moveView = (x: number, y: number) => {
-        this.xOffset = x;
-        this.yOffset = y;
-    }
+    /**
+     * @param offset How far to pan the screen Up and Left (or north and west). Contents in the world
+     * will move down and right.
+     */
+    public panView = ({offsetX: newOffsetX, offsetY: newOffsetY}: OffsetXY) => {
+        const {
+            offsetX: oldOffsetX,
+            offsetY: oldOffsetY
+        } = this.offset;
 
-    public setZoom = (zoom: number) => {
-        this.zoom = zoom;
-    }
-
-    public getScreenPosition = (worldX: number, worldY: number) => {
-
-        // take into account the zoom
-        return {
-            x: (worldX - this.xOffset) * this.zoom,
-            y: (worldY - this.yOffset) * this.zoom
+        this.offset = {
+            offsetX: oldOffsetX + newOffsetX,
+            offsetY: oldOffsetY + newOffsetY,
         }
     }
 
-    public getWorldPosition = (screenX: number, screenY: number) => {
-        // take into account the zoom
-        return {
-            x: screenX + this.xOffset / this.zoom,
-            y: screenY + this.yOffset / this.zoom
-        }
-    }
-
-    public getScreenBoundsInWorld = () => {
-        return {
-            left: this.xOffset,
-            right: this.xOffset + this.columns / this.zoom,
-            top: this.yOffset,
-            bottom: this.yOffset + this.rows / this.zoom
+    /**
+     * Zoom in or out around a specific point in screen space
+     * @param screenXY where on the screen to zoom
+     * @param newZoom the new zoom factor. Larger zooms mean things are farther apart and less of the world is visible.
+     */
+    public zoomView = (screenXY: ScreenXY, newZoom: number) => {
+        const worldPosition = this.getWorldPosition(screenXY);
+        this.offset = {
+            offsetX: screenXY.screenX * (this.zoom / newZoom) - worldPosition.worldX,
+            offsetY: screenXY.screenY * (this.zoom / newZoom) - worldPosition.worldY,
         };
+        this.zoom = newZoom;
+    }
+
+    /**
+     * Gets the screen position of the world coordinates, taking into account
+     * the screen offset and the current zoom. If the coordinates are negative or very large,
+     * the screen position might be off screen.
+     * @param param0 
+     */
+    public getScreenPosition = ({worldX, worldY}: WorldXY): ScreenXY => {
+        const {
+            offsetX,
+            offsetY
+        } = this.offset;
+
+        return {
+            screenX: (worldX + offsetX) * this.zoom,
+            screenY: (worldY + offsetY) * this.zoom,
+        }
+    }
+
+    /**
+     * Get the world position of the screen coordinates. You can supply a screen position that
+     * is technically off-screen.
+     */
+    public getWorldPosition = ({screenX, screenY}: ScreenXY): WorldXY => {
+        const {
+            offsetX,
+            offsetY
+        } = this.offset;
+
+        return {
+            worldX: (screenX / this.zoom) - offsetX,
+            worldY: (screenY / this.zoom) - offsetY
+        };
+    }
+
+    /**
+     * Get the top left of the screen in world coordinates.
+     * Equivalent to this.getWorldPosition(0, 0)
+     */
+    public getWorldTopLeft = () => {
+        return this.getWorldPosition({screenX: 0, screenY: 0});
+    }
+
+    /**
+     * Get the bottom right of the screen in world coordinates.
+     * Equivalent to this.getWorldPosition(columns, rows)
+     */
+    public getWorldBottomRight = () => {
+        return this.getWorldPosition({
+            screenX: this.columns,
+            screenY: this.rows
+        });
+    }
+
+    /**
+     * Get the center of the screen in world coordinates.
+     * Equivalent to this.getWorldPosition(columns / 2, rows / 2)
+     */
+    public getWorldCenter = () => {
+        return this.getWorldPosition({
+            screenX: this.columns / 2,
+            screenY: this.rows / 2
+        });
     }
 
     private onResize = () => {
