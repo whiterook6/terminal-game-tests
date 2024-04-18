@@ -1,3 +1,8 @@
+export type ScreenSize = {
+    screenWidth: number;
+    screenHeight: number;
+};
+
 export type ScreenXY = {
     screenX: number;
     screenY: number;
@@ -23,6 +28,7 @@ export class Screen {
         offsetX: 0,
         offsetY: 0
     };
+    listeners: ((screensize: ScreenSize) => void)[] = [];
 
     /**
      * Smaller Zoom means smaller things closer together on screen, so a wider view, like the view from a satellite. Larger zoom means larger things farther apart on screen, so a narrower view, like the view from a drone.
@@ -37,6 +43,14 @@ export class Screen {
 
     public destroy = () => {
         process.stdout.removeListener("resize", this.onResize);
+    }
+
+    public addListener = (callback: (screensize: ScreenSize) => void) => {
+        this.listeners.push(callback);
+    }
+
+    public removeListener = (callback: (screensize: ScreenSize) => void) => {
+        this.listeners = this.listeners.filter(listener => listener !== callback);
     }
 
     /**
@@ -68,6 +82,11 @@ export class Screen {
         };
         this.zoom = newZoom;
     }
+
+    public getScreenSize = (): ScreenSize => ({
+        screenWidth: this.columns,
+        screenHeight: this.rows
+    });
 
     /**
      * Gets the screen position of the world coordinates, taking into account
@@ -136,5 +155,12 @@ export class Screen {
     private onResize = () => {
         this.columns = process.stdout.columns;
         this.rows = process.stdout.rows;
+
+        for (const listener of this.listeners){
+            listener({
+                screenWidth: this.columns,
+                screenHeight: this.rows
+            });
+        }
     }
 }
