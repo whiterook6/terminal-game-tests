@@ -1,22 +1,13 @@
 import ansi from "ansi";
-import { Window, TitlePosition } from "./Window";
-import { ProgressBar, ProgressBarLabel } from "./ProgressBar";
-import { Map } from "./Map";
 import { View } from "./View";
 
 const run = () =>{
   const cursor = ansi(process.stdout);
-  process.stdin.resume();
-  let interval;
 
   process.on('SIGINT', function() {
-    if (interval) {
-      clearInterval(interval);
-    }
     cursor.goto(0, 0).show().reset().bg.reset().eraseLine();
     process.exit();
   });
-  cursor.hide().brightWhite();
 
   cursor.hide();
 
@@ -28,15 +19,6 @@ const run = () =>{
     rows = process.stdout.rows;
   });
 
-  const text = [
-    "This is a regular paragraph block. Professionally productize",
-    "highly efficient results with world-class core competencies.",
-    "Objectively matrix leveraged architectures vis-a-vis error-f",
-    "ree applications. Completely maximize customized portals via",
-    "fully researched metrics. Enthusiastically generate premier ",
-    "action items through web-enabled e-markets. Efficiently para",
-    "llel task holistic intellectual capital and client-centric m",
-  ]; // 60 * 7
   const view = new View({offsetX: 5, offsetY: 5}, {viewWidth: columns, viewHeight: rows});
 
   const stdin  = process.stdin;
@@ -63,17 +45,33 @@ const run = () =>{
       case "d":
         view.panView({offsetX: 1, offsetY: 0});
         break;
+      case "q": // zoom in
+        view.zoomView({viewX: columns / 2, viewY: rows / 2}, view.getZoom() * 1.5);
+        break;
+      case "e": // zoom out
+        view.zoomView({viewX: columns / 2, viewY: rows / 2}, view.getZoom() / 1.5);
+        break;
     }
   });
-
+  
   const draw = () => {
-    const map = Map(text, view.getOffset(), view.getSize());
-    for (let i = 0; i < map.length; i++){
-      cursor.goto(0, i).write(map[i]).eraseLine();
+    const zoom = view.getZoom();
+    cursor.goto(1, 1).eraseLine().write(`Zoom: ${zoom}`);
+
+    const worldCoordinates = view.getWorldPosition({viewX: 10, viewY: 10});
+    cursor.goto(10, 10).eraseLine().write(`[${worldCoordinates.worldX}, ${worldCoordinates.worldY}]`);
+    
+    const viewCoordinates = view.getViewPosition({worldX: 10, worldY: 10});
+    if (viewCoordinates.viewX < 0 || viewCoordinates.viewY < 0 || viewCoordinates.viewX >= columns || viewCoordinates.viewY >= rows) {
+      return;
     }
+
+    cursor.goto(viewCoordinates.viewX, viewCoordinates.viewY).eraseLine().write(`[10, 10]`);
   }
 
-  interval = setInterval(draw, 1000 / 60);
+  setInterval(() => {
+    draw();
+  }, 1000/60);
 }
 
 run();
