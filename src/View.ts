@@ -60,8 +60,8 @@ export class View {
 
         const worldPosition = this.getWorldPosition(viewXY);
         this.offset = {
-            offsetX: viewXY.viewX * (this.zoom / safeNewZoom) - worldPosition.worldX,
-            offsetY: viewXY.viewY * (this.zoom / safeNewZoom) - worldPosition.worldY,
+            offsetX: viewXY.viewX / safeNewZoom - worldPosition.worldX,
+            offsetY: viewXY.viewY / safeNewZoom - worldPosition.worldY,
         };
         this.zoom = safeNewZoom;
     }
