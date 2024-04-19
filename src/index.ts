@@ -1,77 +1,68 @@
 import ansi from "ansi";
-import { View } from "./View";
+import { Window, TitlePosition } from "./Window";
+import { ProgressBar, ProgressBarLabel } from "./ProgressBar";
 
 const run = () =>{
   const cursor = ansi(process.stdout);
+  process.stdin.resume();
+  let interval;
 
   process.on('SIGINT', function() {
+    if (interval) {
+      clearInterval(interval);
+    }
     cursor.goto(0, 0).show().reset().bg.reset().eraseLine();
     process.exit();
   });
+  cursor.hide().brightWhite();
 
-  cursor.hide();
-
-  let columns = process.stdout.columns;
-  let rows = process.stdout.rows;
-
-  process.stdout.addListener("resize", () => {
-    columns = process.stdout.columns;
-    rows = process.stdout.rows;
-  });
-
-  const view = new View({offsetX: 5, offsetY: 5}, {viewWidth: columns, viewHeight: rows});
-
-  const stdin  = process.stdin;
-  stdin.setRawMode(true);
-  stdin.resume();
-  stdin.setEncoding("utf-8");
-  stdin.on("data", (key: string) => {
-    // ctrl-c ( end of text )
-    if ( key === "\u0003" ) {
-      cursor.goto(0, 0).show().reset().bg.reset().eraseLine();
-      process.exit();
+  let value = 0;
+  const maxValue = 69;
+  const width = 20;
+  let delay = 0;
+  const update = () => {
+    if (value >= maxValue && delay > 30){
+      value = 0;
+      delay = 0;
+    } else if (value >= maxValue) {
+      value = maxValue;
+      delay++;
+    } else {
+      value += Math.random();
     }
 
-    switch (key){
-      case "w":
-        view.panView({offsetX: 0, offsetY: -1});
-        break;
-      case "s":
-        view.panView({offsetX: 0, offsetY: 1});
-        break;
-      case "a":
-        view.panView({offsetX: -1, offsetY: 0});
-        break;
-      case "d":
-        view.panView({offsetX: 1, offsetY: 0});
-        break;
-      case "q": // zoom in
-        view.zoomView({viewX: columns / 2, viewY: rows / 2}, view.getZoom() * 1.5);
-        break;
-      case "e": // zoom out
-        view.zoomView({viewX: columns / 2, viewY: rows / 2}, view.getZoom() / 1.5);
-        break;
-    }
-  });
-  
-  const draw = () => {
-    const zoom = view.getZoom();
-    cursor.goto(1, 1).eraseLine().write(`Zoom: ${zoom}`);
+    cursor.brightGreen().goto(5, 5).write(ProgressBar({
+      value,
+      maxValue,
+      minValue: 0,
+      width
+    })).reset();
 
-    const worldCoordinates = view.getWorldPosition({viewX: 10, viewY: 10});
-    cursor.goto(10, 10).eraseLine().write(`[${worldCoordinates.worldX}, ${worldCoordinates.worldY}]`);
-    
-    const viewCoordinates = view.getViewPosition({worldX: 10, worldY: 10});
-    if (viewCoordinates.viewX < 0 || viewCoordinates.viewY < 0 || viewCoordinates.viewX >= columns || viewCoordinates.viewY >= rows) {
-      return;
-    }
+    cursor.brightYellow().goto(5, 6).write(ProgressBar({
+      value,
+      maxValue,
+      minValue: 0,
+      width,
+      label: ProgressBarLabel.division,
+    })).reset();
 
-    cursor.goto(viewCoordinates.viewX, viewCoordinates.viewY).eraseLine().write(`[10, 10]`);
+    cursor.brightRed().goto(5, 7).write(ProgressBar({
+      value,
+      maxValue,
+      minValue: 0,
+      width,
+      label: ProgressBarLabel.percentage,
+    })).reset();
+
+    cursor.brightMagenta().goto(5, 8).write(ProgressBar({
+      value,
+      maxValue,
+      minValue: 0,
+      width
+    })).reset();
   }
 
-  setInterval(() => {
-    draw();
-  }, 1000/60);
+  interval = setInterval(update, 1000 / 60);
 }
 
 run();
