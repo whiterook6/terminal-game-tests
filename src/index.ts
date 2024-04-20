@@ -1,68 +1,21 @@
 import ansi from "ansi";
 import { Window, TitlePosition } from "./Window";
 import { ProgressBar, ProgressBarLabel } from "./ProgressBar";
+import { Map } from "./Map";
 
 const run = () =>{
-  const cursor = ansi(process.stdout);
-  process.stdin.resume();
-  let interval;
+  const text = [
+    "This is a regular paragraph block. Professionally productize",
+    "highly efficient results with world-class core competencies.",
+    "Objectively matrix leveraged architectures vis-a-vis error-f",
+    "ree applications. Completely maximize customized portals via",
+    "fully researched metrics. Enthusiastically generate premier ",
+    "action items through web-enabled e-markets. Efficiently para",
+    "llel task holistic intellectual capital and client-centric m",
+  ]; // 60 * 7
 
-  process.on('SIGINT', function() {
-    if (interval) {
-      clearInterval(interval);
-    }
-    cursor.goto(0, 0).show().reset().bg.reset().eraseLine();
-    process.exit();
-  });
-  cursor.hide().brightWhite();
-
-  let value = 0;
-  const maxValue = 69;
-  const width = 20;
-  let delay = 0;
-  const update = () => {
-    if (value >= maxValue && delay > 30){
-      value = 0;
-      delay = 0;
-    } else if (value >= maxValue) {
-      value = maxValue;
-      delay++;
-    } else {
-      value += Math.random();
-    }
-
-    cursor.brightGreen().goto(5, 5).write(ProgressBar({
-      value,
-      maxValue,
-      minValue: 0,
-      width
-    })).reset();
-
-    cursor.brightYellow().goto(5, 6).write(ProgressBar({
-      value,
-      maxValue,
-      minValue: 0,
-      width,
-      label: ProgressBarLabel.division,
-    })).reset();
-
-    cursor.brightRed().goto(5, 7).write(ProgressBar({
-      value,
-      maxValue,
-      minValue: 0,
-      width,
-      label: ProgressBarLabel.percentage,
-    })).reset();
-
-    cursor.brightMagenta().goto(5, 8).write(ProgressBar({
-      value,
-      maxValue,
-      minValue: 0,
-      width
-    })).reset();
-  }
-
-  interval = setInterval(update, 1000 / 60);
+  const map = Map(text, { offsetX: 5, offsetY: -3 }, { viewWidth: 40, viewHeight: 9 });
+  console.log(map.join("\n"));
 }
 
 run();
