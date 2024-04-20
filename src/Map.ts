@@ -13,7 +13,7 @@ export const Map = (rows: string[], offset: OffsetXY, viewSize: ViewSize): strin
     const emptyRow = "-".repeat(viewWidth);
 
     const mapHeight = rows.length;
-    if (mapHeight === 0 || offsetY >= mapHeight){
+    if (mapHeight === 0 || offsetY >= viewHeight){
         return Array(viewHeight).fill(emptyRow);
     }
 

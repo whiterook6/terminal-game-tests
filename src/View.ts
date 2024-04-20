@@ -27,8 +27,16 @@ export class View {
         this.offset = {...offset};
     }
 
+    public getOffset = (): OffsetXY => {
+        return {...this.offset};
+    }
+
     public setSize = (size: ViewSize) => {
         this.size = {...size};
+    }
+
+    public getSize = (): ViewSize => {
+        return {...this.size};
     }
 
     /**
