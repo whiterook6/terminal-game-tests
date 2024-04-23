@@ -1,3 +1,5 @@
+import Heap from 'heap';
+
 /**
  * A cell in the grid. [X, Y], zero-indexed
  */
@@ -25,27 +27,15 @@ type FrontierNode = [
 
 export class Pathfinder {
   public findPath = (start: Cell, goal: Cell, isWalkable: IsWalkable): Path => {
-    const frontier: FrontierNode[] = [this.makeNode(start, start, 0, this.getCost(start, goal))];
+    const frontier = new Heap<FrontierNode>((a, b) => a[4] + a[5] - b[4] - b[5]);
+    frontier.push(this.makeNode(start, start, 0, this.getCost(start, goal)));
     const visited: FrontierNode[] = [];
 
     const iterationLimit = 10_000;
     let iterations = 0;
-    while (frontier.length > 0 && iterations < iterationLimit){
+    while (!frontier.empty() && iterations < iterationLimit){
       iterations++;
-      let current: FrontierNode | undefined = undefined;
-
-      if (frontier.length === 1){
-        current = frontier.pop();
-      } else {
-        const lowestCostIndex = this.getLowestCostFrontierNode(frontier);      
-        if (lowestCostIndex === -1){
-          break;
-        }
-  
-        current = frontier[lowestCostIndex];
-        frontier.splice(lowestCostIndex, 1);
-      }
-
+      const current = frontier.pop();
       if (!current){
         break;
       }
@@ -65,12 +55,6 @@ export class Pathfinder {
       for (const neighbor of neighbors){
         const costFromStart = current[4] + this.getCost([current[0], current[1]], neighbor);
         const costToGoal = this.getCost(neighbor, goal);
-        if (visited.some((v) => v[0] === neighbor[0] && v[1] === neighbor[1])){
-          continue;
-        } else if (frontier.some((f) => f[0] === neighbor[0] && f[1] === neighbor[1] && f[4] + f[5] < costFromStart + costToGoal)){
-          continue;
-        }
-
         frontier.push(this.makeNode(neighbor, [current[0], current[1]], costFromStart, costToGoal));
       }
     }
@@ -92,7 +76,7 @@ export class Pathfinder {
   }
 
   private getNeighbors = (node: FrontierNode, isWalkable: IsWalkable): Cell[] => {
-    const [x, y] = node;
+    const [x, y, previousX, previousY] = node;
 
     return [
       [x - 1, y - 1],
@@ -104,27 +88,8 @@ export class Pathfinder {
       [x, y + 1],
       [x + 1, y + 1]
     ].filter((to: Cell) => {
-      return isWalkable([x, y], to);
+      return isWalkable([x, y], to) && (to[0] !== previousX || to[1] !== previousY);
     }) as Cell[];
-  }
-
-  private getLowestCostFrontierNode = (frontier: FrontierNode[]): number => {
-    if (frontier.length === 0){
-      return -1;
-    }
-
-    let lowestCost = Number.POSITIVE_INFINITY;
-    let lowestCostIndex = -1;
-    for (let i = 0; i < frontier.length; i++){
-      const node = frontier[i];
-      const cost = node[4] + node[5];
-      if (cost < lowestCost){
-        lowestCost = cost;
-        lowestCostIndex = i;
-      }
-    }
-    
-    return lowestCostIndex;
   }
 
   private makeNode = (cell: Cell, previous: Cell, costFromStart: number, costToGoal: number): FrontierNode => {
@@ -138,9 +103,7 @@ export class Pathfinder {
     ];
   }
 
-  private getCost = (a: Cell, b: Cell): number => { // eg 10 or 14
-    const hSquared = (a[0] - b[0]) * (a[0] - b[0]);
-    const vSquared = (a[1] - b[1]) * (a[1] - b[1]);
-    return Math.floor(Math.sqrt(hSquared + vSquared) * 10);
+  private getCost = (a: Cell, b: Cell): number => { 
+    return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
   }
 }
