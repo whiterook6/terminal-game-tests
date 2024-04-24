@@ -1,4 +1,4 @@
-import { OffsetXY, ViewSize } from "./types";
+import { OffsetXY, ViewSize } from "../types";
 
 /**
  * 
@@ -7,7 +7,7 @@ import { OffsetXY, ViewSize } from "./types";
  * @param viewSize How wide and tall the view should be
  * @returns the map contents, in rows, including any blank space needed to fill the view
  */
-export const Map = (rows: string[], offset: OffsetXY, viewSize: ViewSize): string[] => {
+export const MapView = (rows: string[], offset: OffsetXY, viewSize: ViewSize): string[] => {
     const { offsetX, offsetY } = offset;
     const { viewWidth, viewHeight } = viewSize;
     const emptyRow = "-".repeat(viewWidth);

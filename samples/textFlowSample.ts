@@ -1,5 +1,5 @@
 import ansi from "ansi";
-import { Box } from "../src/Window";
+import { Box } from "../src/ui/Window";
 import { GameLoop } from "../src/GameLoop";
 
 const run = () =>{

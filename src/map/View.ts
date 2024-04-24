@@ -1,5 +1,4 @@
-import { OffsetXY, ViewSize, ViewXY, WorldXY } from "./types";
-
+import { OffsetXY, ViewSize, ViewXY, WorldXY } from "../types";
 
 export const MAX_ZOOM = 8;
 export const MIN_ZOOM = 1/8;

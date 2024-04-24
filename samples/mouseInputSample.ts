@@ -1,6 +1,6 @@
 import ansi from "ansi";
 import { Screen } from "../src/Screen";
-import { Box } from "../src/Window";
+import { Box } from "../src/ui/Window";
 
 const run = () =>{
   const stdin = process.stdin;
