@@ -5,5 +5,5 @@
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
     },
-    "include": ["src/**/*", "samples/mouseInputSample.ts", "samples/textFlowSample.ts"]
+    "include": ["src/**/*"]
 }

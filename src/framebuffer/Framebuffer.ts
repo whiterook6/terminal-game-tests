@@ -1,5 +1,5 @@
 import ansi from "ansi";
-import { ViewSize, ViewXY } from "../types"
+import { ViewSize, ViewXY } from "../types";
 import { overwriteArray, overwriteString } from "../helpers";
 
 export type RGB = [number, number, number];
@@ -30,13 +30,15 @@ export const Framebuffer = (size: ViewSize) => {
     cursor.bg.rgb(...bgBuffer[0][0]);
     let previousFG = fgBuffer[0][0];
     let previousBG = bgBuffer[0][0];
-    for (let j = 0; j < buffer.length; j++){ // for each row
-      for (let i = 0; i < buffer[j].length; i++){ // for each character
-        if (fgBuffer[j][i] !== previousFG){
+    for (let j = 0; j < buffer.length; j++) {
+      // for each row
+      for (let i = 0; i < buffer[j].length; i++) {
+        // for each character
+        if (fgBuffer[j][i] !== previousFG) {
           cursor.fg.rgb(...fgBuffer[j][i]);
           previousFG = fgBuffer[j][i];
         }
-        if (bgBuffer[j][i] !== previousBG){
+        if (bgBuffer[j][i] !== previousBG) {
           cursor.bg.rgb(...bgBuffer[j][i]);
           previousBG = bgBuffer[j][i];
         }
@@ -45,10 +47,10 @@ export const Framebuffer = (size: ViewSize) => {
     }
     cursor.flush();
   };
-  
+
   const resize = (newSize: ViewSize) => {
-    width = newSize.viewWidth;
-    height = newSize.viewHeight;
+    width = Math.max(newSize.viewWidth, 1);
+    height = Math.max(newSize.viewHeight, 1);
 
     emptyRow = " ".repeat(width);
     buffer.length = height;
@@ -63,10 +65,7 @@ export const Framebuffer = (size: ViewSize) => {
     bgBuffer.fill(emptyBGRow);
   };
 
-  const write = (
-    viewXY: ViewXY,
-    tokens: TOKEN[]
-  ) => {
+  const write = (viewXY: ViewXY, tokens: TOKEN[]) => {
     const viewX = Math.floor(viewXY.viewX);
     const viewY = Math.floor(viewXY.viewY);
 
@@ -92,14 +91,14 @@ export const Framebuffer = (size: ViewSize) => {
     buffer[viewY] = overwriteString(buffer[viewY], row, viewX);
     fgBuffer[viewY] = overwriteArray<RGB>(fgBuffer[viewY], fgRow, viewX);
     bgBuffer[viewY] = overwriteArray<RGB>(bgBuffer[viewY], bgRow, viewX);
-  }
+  };
 
   return {
     clear,
     render,
     resize,
     write,
-    width: () => buffer.length > 0 ? buffer[0].length : 0,
+    width: () => (buffer.length > 0 ? buffer[0].length : 0),
     height: () => buffer.length,
-  }
-}
+  };
+};
