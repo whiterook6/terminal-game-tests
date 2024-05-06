@@ -20,16 +20,16 @@ const run = () => {
     viewX: 0,
     viewY: 0
   };
-  let speedX = 20 / 60; // 2 characters per second
-  let speedY = 15 / 60; // 1 character per second
+  let speedX = 50 / 60;
+  let speedY = 15 / 60;
   const update = () => {
     buffer.clear();
     textPosition.viewX += speedX;
     textPosition.viewY += speedY;
     if (textPosition.viewX >= buffer.width()){
-      speedX = -20 / 60;
+      speedX = -50 / 60;
     } else if (textPosition.viewX < 0) {
-      speedX = 20 / 60;
+      speedX = 50 / 60;
     }
     if (textPosition.viewY >= buffer.height()){
       speedY = -15 / 60;
@@ -37,7 +37,27 @@ const run = () => {
       speedY = 15 / 60;
     }
     
-    buffer.write(textPosition, "Hello, world!");
+    buffer.write(textPosition, ["[", [255, 255, 255], [0, 0, 0]]);
+    const xString = textPosition.viewX.toFixed(2);
+    buffer.write({
+      viewX: textPosition.viewX + 1,
+      viewY: textPosition.viewY
+    }, [xString, [255, 0, 0], [0, 0, 0]]);
+    buffer.write({
+      viewX: textPosition.viewX + 1 + xString.length,
+      viewY: textPosition.viewY
+    }, [",", [0,0,0], [255, 255, 255]]);
+    const yString = textPosition.viewY.toFixed(2);
+    buffer.write({
+      viewX: textPosition.viewX + 2 + xString.length,
+      viewY: textPosition.viewY
+    }, [yString, [0, 0, 255], [0, 0, 0]]);
+    buffer.write({
+      viewX: textPosition.viewX + 2 + xString.length + yString.length,
+      viewY: textPosition.viewY
+    }, ["]", [0,0,0], [255, 255, 255]]);
+
+    
     buffer.render(cursor);
   };
   let interval = setInterval(update, 1000 / 60);
