@@ -28,7 +28,7 @@ const run = () => {
     textPosition.viewY += speedY;
     if (textPosition.viewX >= buffer.width()){
       speedX = -50 / 60;
-    } else if (textPosition.viewX < 0) {
+    } else if (textPosition.viewX < -5) {
       speedX = 50 / 60;
     }
     if (textPosition.viewY >= buffer.height()){
@@ -37,26 +37,15 @@ const run = () => {
       speedY = 15 / 60;
     }
     
-    buffer.write(textPosition, ["[", [255, 255, 255], [0, 0, 0]]);
     const xString = textPosition.viewX.toFixed(2);
-    buffer.write({
-      viewX: textPosition.viewX + 1,
-      viewY: textPosition.viewY
-    }, [xString, [255, 0, 0], [0, 0, 0]]);
-    buffer.write({
-      viewX: textPosition.viewX + 1 + xString.length,
-      viewY: textPosition.viewY
-    }, [",", [0,0,0], [255, 255, 255]]);
     const yString = textPosition.viewY.toFixed(2);
-    buffer.write({
-      viewX: textPosition.viewX + 2 + xString.length,
-      viewY: textPosition.viewY
-    }, [yString, [0, 0, 255], [0, 0, 0]]);
-    buffer.write({
-      viewX: textPosition.viewX + 2 + xString.length + yString.length,
-      viewY: textPosition.viewY
-    }, ["]", [0,0,0], [255, 255, 255]]);
-
+    buffer.write(textPosition, [
+      ["[", [255, 255, 255], [0, 0, 0]],
+      [xString, [255, 0, 0], [50, 50, 50]],
+      [",", [0, 255, 0], [0, 0, 0]],
+      [yString, [0, 0, 255], [50, 50, 50]],
+      ["]", [255, 255, 255], [0, 0, 0]]
+    ]);
     
     buffer.render(cursor);
   };

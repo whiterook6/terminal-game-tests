@@ -1,5 +1,6 @@
 import ansi from "ansi";
 import { ViewSize, ViewXY } from "../types"
+import { overwriteArray, overwriteString } from "../helpers";
 
 export type RGB = [number, number, number];
 export type TOKEN = [string, RGB, RGB];
@@ -64,7 +65,7 @@ export const Framebuffer = (size: ViewSize) => {
 
   const write = (
     viewXY: ViewXY,
-    [text, fg, bg]: TOKEN
+    tokens: TOKEN[]
   ) => {
     const viewX = Math.floor(viewXY.viewX);
     const viewY = Math.floor(viewXY.viewY);
@@ -72,55 +73,25 @@ export const Framebuffer = (size: ViewSize) => {
     // if we're outside the view, skip
     if (viewY < 0 || viewY >= buffer.length) {
       return;
-    } else if (viewX > width || viewX + text.length < 0) {
+    }
+
+    const row = tokens.map(([text]) => text).join("");
+    if (viewX + row.length < 0 || viewX >= buffer[0].length) {
       return;
     }
 
-    const row = buffer[viewY];
-    if (!row){
-      throw new Error(`Row ${viewY} does not exist`);
-    }
+    const fgRow: RGB[] = tokens.flatMap((token) => {
+      const [text, fg] = token;
+      return Array(text.length).fill(fg);
+    });
+    const bgRow: RGB[] = tokens.flatMap((token) => {
+      const [text, _, bg] = token;
+      return Array(text.length).fill(bg);
+    });
 
-    let leftSlice: number, rightSlice: number | undefined;
-    let leftPad: string;
-    let rightPad: string;
-
-    // figure out how much of each row to include, and how much to pad each row
-    // left side
-    if (viewX < 0){
-      leftSlice = -viewX;
-      leftPad = "";
-    } else if (viewX > 0){
-      leftSlice = 0;
-      leftPad = row.substring(0, viewX);
-    } else {
-      leftSlice = 0;
-      leftPad = "";
-    }
-
-    // if the text is too wide, crop it
-    if (viewX + text.length >= width){
-      rightPad = "";
-      rightSlice = width - viewX;
-    } else if (viewX + text.length < width){ // need extra padding on the right
-      rightSlice = text.length;
-      rightPad = row.substring(viewX + text.length);
-    } else {
-      rightSlice = width - viewX;
-      rightPad = "";
-    }
-
-    buffer[viewY] = leftPad + text.slice(leftSlice, rightSlice) + rightPad;
-    fgBuffer[viewY] = [
-      ...fgBuffer[viewY].slice(0, viewX),
-      ...Array(rightSlice - leftSlice).fill(fg),
-      ...fgBuffer[viewY].slice(viewX + text.length)
-    ];
-    bgBuffer[viewY] = [
-      ...bgBuffer[viewY].slice(0, viewX),
-      ...Array(rightSlice - leftSlice).fill(bg),
-      ...bgBuffer[viewY].slice(viewX + text.length)
-    ];
+    buffer[viewY] = overwriteString(buffer[viewY], row, viewX);
+    fgBuffer[viewY] = overwriteArray<RGB>(fgBuffer[viewY], fgRow, viewX);
+    bgBuffer[viewY] = overwriteArray<RGB>(bgBuffer[viewY], bgRow, viewX);
   }
 
   return {
