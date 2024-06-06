@@ -1,100 +1,90 @@
 import ansi from "ansi";
-import {Framebuffer} from "./framebuffer/Framebuffer"
-import { TitlePosition, Window } from "./ui/Window";
+import { randomColor, randomFloat } from "./Random";
+import { Framebuffer } from "./framebuffer/Framebuffer";
+import { RGB, WorldXY } from "./types";
+import { randomInt } from "crypto";
+
+const leftWall = 1;
+const rightWall = 100;
+const topWall = 1;
+const bottomWall = 30;
+const particleCount = 10;
+const positions: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
+  worldX: randomInt(leftWall, rightWall),
+  worldY: randomInt(topWall, bottomWall),
+}));
+const velocities: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
+  worldX: randomFloat(-4, 4),
+  worldY: randomFloat(-2, 2),
+}));
+const colors: RGB[] = Array.apply(null, { length: particleCount }).map(() => randomColor());
+const backgroundColor: RGB = [0, 0, 0];
+const framebuffer = new Framebuffer({viewHeight: 30, viewWidth: 100});
+
 
 const run = () =>{
   const cursor = ansi(process.stdout);
+  process.stdin.resume();
+  let interval;
 
-  cursor.hide().brightWhite();
-
-  const framebuffer = Framebuffer({
-    viewHeight: process.stdout.rows,
-    viewWidth: process.stdout.columns
+  process.on('SIGINT', function() {
+    if (interval) {
+      clearInterval(interval);
+    }
+    cursor.goto(0, 0).show().reset().bg.reset().eraseLine();
+    process.exit();
   });
+  cursor.hide();
 
-  let logWindow: string[];
-  let playerWindow: string[];
-  let mapWindow: string[];
-  let inventoryWindow: string[];
+  const update = (deltaTMS) => {
+    positions.forEach((position, i) => {
+      position.worldX += velocities[i].worldX * deltaTMS / 1000;
+      position.worldY += velocities[i].worldY * deltaTMS / 1000;
 
-  const buildWindows = () => {
-    const screenWidth = process.stdout.columns;
-    const screenHeight = process.stdout.rows;
+      velocities[i].worldY += deltaTMS / 1000;
 
-    logWindow = Window({
-      width: Math.floor(screenWidth / 2),
-      height: 7,
-      title: "Log",
-      titlePosition: TitlePosition.BOTTOM_RIGHT
-    });
-    playerWindow = Window({
-      width: Math.ceil(screenWidth / 2),
-      height: 7,
-      title: "Player",
-      titlePosition: TitlePosition.BOTTOM_LEFT
-    });
-    mapWindow = Window({
-      width: screenWidth - 25,
-      height: screenHeight - playerWindow.length + 1,
-      title: "Map",
-      titlePosition: TitlePosition.TOP
-    });
-    inventoryWindow = Window({
-      width: 25,
-      height: screenHeight - playerWindow.length + 1,
-      title: "Inventory",
-      titlePosition: TitlePosition.TOP_LEFT
-    });
-  };
+      if (position.worldX < leftWall) {
+        position.worldX = leftWall;
+        velocities[i].worldX *= -1;
+      } else if (position.worldX > rightWall) {
+        position.worldX = rightWall;
+        velocities[i].worldX *= -1;
+      }
 
-  buildWindows();
-  process.stdout.addListener("resize", () => {
-    framebuffer.resize({
-      viewHeight: process.stdout.rows,
-      viewWidth: process.stdout.columns
+      if (position.worldY < topWall) {
+        position.worldY = topWall;
+        velocities[i].worldY *= -1;
+      } else if (position.worldY > bottomWall) {
+        position.worldY = bottomWall;
+        velocities[i].worldY *= -1;
+      }
     });
-    buildWindows();
-  });
+  }
 
   const render = () => {
     framebuffer.clear();
-    for (let y = 0; y < logWindow.length; y++) {
-      framebuffer.write({
-        viewX: 0,
-        viewY: y,
-      }, [[logWindow[y], [255, 255, 255], [0, 0, 0]]]);
+    for (let i = 0; i < particleCount; i++) {
+      for (let j = 0; j < 10; j++) {
+        const trailColor: RGB = colors[i].map(c => Math.floor(c * (1 - j / 10))) as RGB;
+        framebuffer.write({
+          viewX: Math.floor(positions[i].worldX - j * velocities[i].worldX),
+          viewY: Math.floor(positions[i].worldY - j * velocities[i].worldY),
+        }, [['.', trailColor, backgroundColor]]);
+      }
     }
-    for (let y = 0; y < playerWindow.length; y++) {
+    for (let i = 0; i < particleCount; i++) {
       framebuffer.write({
-        viewX: logWindow[0].length,
-        viewY: y,
-      }, [[playerWindow[y], [255, 255, 255], [0, 0, 0]]]);
+        viewX: Math.floor(positions[i].worldX),
+        viewY: Math.floor(positions[i].worldY),
+      }, [['o', colors[i], backgroundColor]]);
     }
-    for (let y = 0; y < mapWindow.length; y++) {
-      framebuffer.write({
-        viewX: 0,
-        viewY: y + logWindow.length,
-      }, [[mapWindow[y], [255, 255, 255], [0, 0, 0]]]);
-    }
-    for (let y = 0; y < inventoryWindow.length; y++) {
-      framebuffer.write({
-        viewX: mapWindow[0].length,
-        viewY: y + logWindow.length,
-      }, [[inventoryWindow[y], [255, 255, 255], [0, 0, 0]]]);
-    }
-
     framebuffer.render(cursor);
-  }
+  };
 
-  const interval = setInterval(() => {
+  interval = setInterval(() => {
+    update(60);
     render();
   }, 1000 / 60);
-
-  process.on('SIGINT', function() {
-    cursor.goto(0, 0).show().reset().bg.reset().eraseLine();
-    clearInterval(interval);
-    process.exit();
-  });
-}
+};
 
 run();

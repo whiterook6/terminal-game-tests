@@ -1,81 +1,91 @@
 import ansi from "ansi";
-import { ViewSize, ViewXY } from "../types";
+import { RGB, ViewSize, ViewXY } from "../types";
 import { overwriteArray, overwriteString } from "../helpers";
 
-export type RGB = [number, number, number];
 export type TOKEN = [string, RGB, RGB];
 
-export const Framebuffer = (size: ViewSize) => {
-  let width = size.viewWidth;
-  let height = size.viewHeight;
-  let emptyRow = " ".repeat(width);
-  const buffer = Array(height).fill(emptyRow) as string[];
+export class Framebuffer {
+  private width: number;
+  private height: number;
+  private buffer: string[];
+  private fgBuffer: RGB[][];
+  private bgBuffer: RGB[][];
+  private emptyRow: string;
+  private emptyFGRow: RGB[];
+  private emptyBGRow: RGB[];
 
-  let emptyFGRow = Array(width).fill([255, 255, 255]) as RGB[];
-  const fgBuffer = Array(height).fill(emptyFGRow) as RGB[][];
+  constructor(size: ViewSize) {
+    this.width = size.viewWidth;
+    this.height = size.viewHeight;
+    
+    this.emptyRow = " ".repeat(this.width);
+    this.emptyFGRow = Array(this.width).fill([255, 255, 255]);
+    this.emptyBGRow = Array(this.width).fill([0, 0, 0]);
 
-  let emptyBGRow = Array(width).fill([0, 0, 0]) as RGB[];
-  const bgBuffer = Array(height).fill(emptyBGRow) as RGB[][];
+    this.buffer = Array(this.height).fill(this.emptyRow);
+    this.fgBuffer = Array(this.height).fill(this.emptyFGRow);
+    this.bgBuffer = Array(this.height).fill(this.emptyBGRow);
+  }
 
-  const clear = () => {
-    buffer.fill(emptyRow);
-    fgBuffer.fill(emptyFGRow);
-    bgBuffer.fill(emptyBGRow);
-  };
-
-  const render = (cursor: ansi.Cursor) => {
+  public clear = () => {
+    this.buffer.fill(this.emptyRow);
+    this.fgBuffer.fill(this.emptyFGRow);
+    this.bgBuffer.fill(this.emptyBGRow);
+  }
+  
+  public render = (cursor: ansi.Cursor) => {
     cursor.buffer();
     cursor.goto(1, 1);
-    cursor.fg.rgb(...fgBuffer[0][0]);
-    cursor.bg.rgb(...bgBuffer[0][0]);
-    let previousFG = fgBuffer[0][0];
-    let previousBG = bgBuffer[0][0];
-    for (let j = 0; j < buffer.length; j++) {
+    cursor.fg.rgb(...this.fgBuffer[0][0]);
+    cursor.bg.rgb(...this.bgBuffer[0][0]);
+    let previousFG = this.fgBuffer[0][0];
+    let previousBG = this.bgBuffer[0][0];
+    for (let j = 0; j < this.buffer.length; j++) {
       // for each row
-      for (let i = 0; i < buffer[j].length; i++) {
+      for (let i = 0; i < this.buffer[j].length; i++) {
         // for each character
-        if (fgBuffer[j][i] !== previousFG) {
-          cursor.fg.rgb(...fgBuffer[j][i]);
-          previousFG = fgBuffer[j][i];
+        if (this.fgBuffer[j][i] !== previousFG) {
+          cursor.fg.rgb(...this.fgBuffer[j][i]);
+          previousFG = this.fgBuffer[j][i];
         }
-        if (bgBuffer[j][i] !== previousBG) {
-          cursor.bg.rgb(...bgBuffer[j][i]);
-          previousBG = bgBuffer[j][i];
+        if (this.bgBuffer[j][i] !== previousBG) {
+          cursor.bg.rgb(...this.bgBuffer[j][i]);
+          previousBG = this.bgBuffer[j][i];
         }
-        cursor.write(buffer[j][i]);
+        cursor.write(this.buffer[j][i]);
       }
     }
     cursor.flush();
   };
 
-  const resize = (newSize: ViewSize) => {
-    width = Math.max(newSize.viewWidth, 1);
-    height = Math.max(newSize.viewHeight, 1);
+  public resize = (newSize: ViewSize) => {
+    this.width = Math.max(newSize.viewWidth, 1);
+    this.height = Math.max(newSize.viewHeight, 1);
 
-    emptyRow = " ".repeat(width);
-    buffer.length = height;
-    buffer.fill(emptyRow);
+    this.emptyRow = " ".repeat(this.width);
+    this.buffer.length = this.height;
+    this.buffer.fill(this.emptyRow);
 
-    emptyFGRow = Array(width).fill([255, 255, 255]);
-    fgBuffer.length = height;
-    fgBuffer.fill(emptyFGRow);
+    this.emptyFGRow = Array(this.width).fill([255, 255, 255]);
+    this.fgBuffer.length = this.height;
+    this.fgBuffer.fill(this.emptyFGRow);
 
-    emptyBGRow = Array(width).fill([0, 0, 0]);
-    bgBuffer.length = height;
-    bgBuffer.fill(emptyBGRow);
+    this.emptyBGRow = Array(this.width).fill([0, 0, 0]);
+    this.bgBuffer.length = this.height;
+    this.bgBuffer.fill(this.emptyBGRow);
   };
 
-  const write = (viewXY: ViewXY, tokens: TOKEN[]) => {
+  public write = (viewXY: ViewXY, tokens: TOKEN[]) => {
     const viewX = Math.floor(viewXY.viewX);
     const viewY = Math.floor(viewXY.viewY);
 
     // if we're outside the view, skip
-    if (viewY < 0 || viewY >= buffer.length) {
+    if (viewY < 0 || viewY >= this.buffer.length) {
       return;
     }
 
     const row = tokens.map(([text]) => text).join("");
-    if (viewX + row.length < 0 || viewX >= buffer[0].length) {
+    if (viewX + row.length < 0 || viewX >= this.buffer[0].length) {
       return;
     }
 
@@ -88,17 +98,11 @@ export const Framebuffer = (size: ViewSize) => {
       return Array(text.length).fill(bg);
     });
 
-    buffer[viewY] = overwriteString(buffer[viewY], row, viewX);
-    fgBuffer[viewY] = overwriteArray<RGB>(fgBuffer[viewY], fgRow, viewX);
-    bgBuffer[viewY] = overwriteArray<RGB>(bgBuffer[viewY], bgRow, viewX);
+    this.buffer[viewY] = overwriteString(this.buffer[viewY], row, viewX);
+    this.fgBuffer[viewY] = overwriteArray<RGB>(this.fgBuffer[viewY], fgRow, viewX);
+    this.bgBuffer[viewY] = overwriteArray<RGB>(this.bgBuffer[viewY], bgRow, viewX);
   };
 
-  return {
-    clear,
-    render,
-    resize,
-    write,
-    width: () => (buffer.length > 0 ? buffer[0].length : 0),
-    height: () => buffer.length,
-  };
+  public getWidth = () => this.width;
+  public getHeight = () => this.height;
 };

@@ -17,3 +17,5 @@ export type OffsetXY = {
   offsetX: number;
   offsetY: number;
 };
+
+export type RGB = [number, number, number];
