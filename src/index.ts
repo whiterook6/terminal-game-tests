@@ -1,7 +1,7 @@
 import ansi from "ansi";
-import { randomColor, randomFloat } from "./Random";
 import { Framebuffer } from "./framebuffer/Framebuffer";
-import { RGB, WorldXY } from "./types";
+import { ParticleSystem } from "./particles/ParticleSystem";
+import { randomColor, randomFloat } from "./Random";
 import { randomInt } from "crypto";
 
 const run = () =>{
@@ -22,71 +22,21 @@ const run = () =>{
   const terminalWidth = process.stdout.columns;
   const terminalHeight = process.stdout.rows;
   const framebuffer = new Framebuffer({viewHeight: terminalHeight, viewWidth: terminalWidth});
-
-  const leftWall = 1;
-  const rightWall = terminalWidth - 1;
-  const topWall = 1;
-  const bottomWall = terminalHeight - 1;
-  const particleCount = 10;
-  const positions: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
-    worldX: randomInt(leftWall, rightWall),
-    worldY: randomInt(topWall, bottomWall),
-  }));
-  const velocities: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
-    worldX: randomFloat(-4, 4),
-    worldY: randomFloat(-2, 2),
-  }));
-  const colors: RGB[] = Array.apply(null, { length: particleCount }).map(() => randomColor());
-  const backgroundColor: RGB = [0, 0, 0];
-
-  const update = (deltaTMS) => {
-    positions.forEach((position, i) => {
-      position.worldX += velocities[i].worldX * deltaTMS / 1000;
-      position.worldY += velocities[i].worldY * deltaTMS / 1000;
-
-      velocities[i].worldY += deltaTMS / 1000;
-
-      if (position.worldX < leftWall) {
-        position.worldX = leftWall;
-        velocities[i].worldX *= -1;
-      } else if (position.worldX > rightWall) {
-        position.worldX = rightWall;
-        velocities[i].worldX *= -1;
-      }
-
-      if (position.worldY < topWall) {
-        position.worldY = topWall;
-        velocities[i].worldY *= -1;
-      } else if (position.worldY > bottomWall) {
-        position.worldY = bottomWall;
-        velocities[i].worldY *= -1;
-      }
-    });
-  }
-
-  const render = () => {
-    framebuffer.clear();
-    for (let i = 0; i < particleCount; i++) {
-      for (let j = 0; j < 10; j++) {
-        const trailColor: RGB = colors[i].map(c => Math.floor(c * (1 - j / 10))) as RGB;
-        framebuffer.write({
-          viewX: Math.floor(positions[i].worldX - j * velocities[i].worldX),
-          viewY: Math.floor(positions[i].worldY - j * velocities[i].worldY),
-        }, [['.', ...trailColor]]);
-      }
-    }
-    for (let i = 0; i < particleCount; i++) {
-      framebuffer.write({
-        viewX: Math.floor(positions[i].worldX),
-        viewY: Math.floor(positions[i].worldY),
-      }, [['o', ...colors[i]]]);
-    }
-    framebuffer.render(cursor);
-  };
+  const particleSystem = new ParticleSystem(1000, terminalWidth, terminalHeight);
 
   interval = setInterval(() => {
-    update(60);
-    render();
+    particleSystem.update(60);
+    particleSystem.spawn({
+      worldX: terminalWidth / 2,
+      worldY: terminalHeight / 2,
+      worldDX: randomFloat(-10, -12),
+      worldDY: randomFloat(-4, -5),
+      millisecondsLeft: randomInt(1000, 3000),
+      color: randomColor()
+    })
+    framebuffer.clear();
+    particleSystem.render(framebuffer);
+    framebuffer.render(cursor);
   }, 1000 / 60);
 };
 
