@@ -1,6 +1,6 @@
 /**
  * Overwrites a part of buffer with incoming, while maintaining the length and original contents
- * of the buffer.
+ * of the buffer. Returns a new buffer, without modifying the original.
  */
 export const overwriteString = (
   buffer: string,
@@ -43,6 +43,7 @@ export const overwriteString = (
 }
 
 /**
+ * Returns a new buffer, without modifying the original.
  * @See overwriteString
  */
 export const overwriteArray = <T>(

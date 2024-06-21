@@ -4,24 +4,6 @@ import { Framebuffer } from "./framebuffer/Framebuffer";
 import { RGB, WorldXY } from "./types";
 import { randomInt } from "crypto";
 
-const leftWall = 1;
-const rightWall = 100;
-const topWall = 1;
-const bottomWall = 30;
-const particleCount = 10;
-const positions: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
-  worldX: randomInt(leftWall, rightWall),
-  worldY: randomInt(topWall, bottomWall),
-}));
-const velocities: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
-  worldX: randomFloat(-4, 4),
-  worldY: randomFloat(-2, 2),
-}));
-const colors: RGB[] = Array.apply(null, { length: particleCount }).map(() => randomColor());
-const backgroundColor: RGB = [0, 0, 0];
-const framebuffer = new Framebuffer({viewHeight: 30, viewWidth: 100});
-
-
 const run = () =>{
   const cursor = ansi(process.stdout);
   process.stdin.resume();
@@ -35,6 +17,27 @@ const run = () =>{
     process.exit();
   });
   cursor.hide();
+
+  // get the size of the terminal
+  const terminalWidth = process.stdout.columns;
+  const terminalHeight = process.stdout.rows;
+  const framebuffer = new Framebuffer({viewHeight: terminalHeight, viewWidth: terminalWidth});
+
+  const leftWall = 1;
+  const rightWall = terminalWidth - 1;
+  const topWall = 1;
+  const bottomWall = terminalHeight - 1;
+  const particleCount = 10;
+  const positions: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
+    worldX: randomInt(leftWall, rightWall),
+    worldY: randomInt(topWall, bottomWall),
+  }));
+  const velocities: WorldXY[] = Array.apply(null, { length: particleCount }).map((_, i) => ({
+    worldX: randomFloat(-4, 4),
+    worldY: randomFloat(-2, 2),
+  }));
+  const colors: RGB[] = Array.apply(null, { length: particleCount }).map(() => randomColor());
+  const backgroundColor: RGB = [0, 0, 0];
 
   const update = (deltaTMS) => {
     positions.forEach((position, i) => {
@@ -69,14 +72,14 @@ const run = () =>{
         framebuffer.write({
           viewX: Math.floor(positions[i].worldX - j * velocities[i].worldX),
           viewY: Math.floor(positions[i].worldY - j * velocities[i].worldY),
-        }, [['.', trailColor, backgroundColor]]);
+        }, [['.', ...trailColor]]);
       }
     }
     for (let i = 0; i < particleCount; i++) {
       framebuffer.write({
         viewX: Math.floor(positions[i].worldX),
         viewY: Math.floor(positions[i].worldY),
-      }, [['o', colors[i], backgroundColor]]);
+      }, [['o', ...colors[i]]]);
     }
     framebuffer.render(cursor);
   };
