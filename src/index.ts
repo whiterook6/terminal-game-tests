@@ -1,10 +1,13 @@
 import ansi from "ansi";
 import { Framebuffer } from "./framebuffer/Framebuffer";
 import { ParticleSystem } from "./particles/ParticleSystem";
-import { randomColor, randomFloat } from "./Random";
-import { randomInt } from "crypto";
+import { randomColor, randomFloat, randomInt } from "./Random";
+import {buildLogger, clearLogs} from "./logging/Logging";
 
 const run = () =>{
+  clearLogs();
+  const logger = buildLogger();
+
   const cursor = ansi(process.stdout);
   process.stdin.resume();
   let interval;
@@ -23,6 +26,7 @@ const run = () =>{
   const terminalHeight = process.stdout.rows;
   const framebuffer = new Framebuffer({viewHeight: terminalHeight, viewWidth: terminalWidth});
   const particleSystem = new ParticleSystem(1000, terminalWidth, terminalHeight);
+  logger.debug(`Terminal width: ${terminalWidth}, Terminal height: ${terminalHeight}`);
 
   interval = setInterval(() => {
     particleSystem.update(60);

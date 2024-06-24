@@ -9,7 +9,6 @@ const __dirname = dirname(__filename);
 
 const run = async () => {
     const outputDir = path.join(__dirname, "/../output");
-    const srcDir = path.join(__dirname, "/../src");
     if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir);
     }
