@@ -2,13 +2,14 @@ import { randomInt } from "crypto";
 import { randomColor, randomFloat } from "../Random";
 import { RGB, WorldXY } from "../types";
 import { Framebuffer } from "../framebuffer/Framebuffer";
-import { Vector, add, scale } from "../Vector";
+import { Vector, add, floor, scale } from "../Vector";
 
 export class ParticleSystem {
   private maxParticles: number;
   private millisecondsLeft: number[];
   private positions: Vector[];
   private velocities: Vector[];
+  private characters: string[];
   private colors: RGB[];
   private topLeft: WorldXY;
   private bottomRight: WorldXY;
@@ -22,6 +23,7 @@ export class ParticleSystem {
     this.velocities = new Array<Vector>(this.maxParticles).fill([0, 0]);
     this.colors = new Array<RGB>(this.maxParticles).fill([0, 0, 0]);
     this.millisecondsLeft = new Array<number>(this.maxParticles).fill(0);
+    this.characters = new Array<string>(this.maxParticles).fill(".");
   }
 
   public spawn = ({
@@ -31,6 +33,7 @@ export class ParticleSystem {
     worldDY,
     millisecondsLeft,
     color,
+    character
   }: {
     worldX: number;
     worldY: number;
@@ -38,6 +41,7 @@ export class ParticleSystem {
     worldDY: number;
     millisecondsLeft: number;
     color: RGB;
+    character: string;
   }) => {
     for (let i = 0; i < this.maxParticles; i++) {
       if (this.millisecondsLeft[i] <= 0) {
@@ -45,6 +49,7 @@ export class ParticleSystem {
         this.velocities[i] = [ worldDX, worldDY ];
         this.millisecondsLeft[i] = millisecondsLeft;
         this.colors[i] = color;
+        this.characters[i] = character;
         break;
       }
     }
@@ -58,8 +63,6 @@ export class ParticleSystem {
       }
 
       this.millisecondsLeft[i] -= deltaTMS;
-      // this.positions[i].worldX += this.velocities[i].worldX * deltaTMS / 1000;
-      // this.positions[i].worldY += this.velocities[i].worldY * deltaTMS / 1000;
       scale(this.velocities[i], deltaTMS / 1000, deltaPosition);
       add(this.positions[i], deltaPosition, this.positions[i]);
 
@@ -84,30 +87,18 @@ export class ParticleSystem {
   }
 
   public render = (framebuffer: Framebuffer) => {
+    const floorPosition: Vector = [0, 0];
     for (let i = 0; i < this.maxParticles; i++) {
-      if (this.millisecondsLeft[i] <= 0) {
+      const millisecondsLeft = this.millisecondsLeft[i];
+      if (millisecondsLeft <= 0) {
         continue;
       }
-
-      const position = this.positions[i];
-
-      let character;
-      if (Math.round(position[0]) > position[0]){
-        if (Math.round(position[1]) > position[1]){
-          character = "⠠";
-        } else {
-          character = "⠈";
-        }
-      } else if (Math.round(position[1]) > position[1]){
-        character = "⠄";
-      } else {
-        character = "⠁";
-      }
-      
+        
+      floor(this.positions[i], floorPosition);
       framebuffer.write({
-        viewX: Math.floor(this.positions[i][0]),
-        viewY: Math.floor(this.positions[i][1]),
-      }, [[character, ...this.colors[i]]]);
+        viewX: Math.floor(floorPosition[0]),
+        viewY: Math.floor(floorPosition[1]),
+      }, [[this.characters[i], ...this.colors[i]]]);
     }
   }
 }

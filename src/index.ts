@@ -1,7 +1,7 @@
 import ansi from "ansi";
 import { Framebuffer } from "./framebuffer/Framebuffer";
 import { ParticleSystem } from "./particles/ParticleSystem";
-import { randomAngle, randomColor, randomFloat, randomInt } from "./Random";
+import { randomAngle, randomColor, randomElement, randomFloat, randomInt } from "./Random";
 import {buildLogger, clearLogs} from "./logging/Logging";
 
 const run = () =>{
@@ -28,6 +28,7 @@ const run = () =>{
   const particleSystem = new ParticleSystem(1000, terminalWidth, terminalHeight);
   logger.debug(`Terminal width: ${terminalWidth}, Terminal height: ${terminalHeight}`);
 
+  const characters = "⋆˖⁺‧₊☽◯☾₊‧⁺˖⋆".split("");
   interval = setInterval(() => {
     particleSystem.update(60);
     particleSystem.spawn({
@@ -36,7 +37,8 @@ const run = () =>{
       worldDX: randomFloat(-10, -12),
       worldDY: randomFloat(-4, -5),
       millisecondsLeft: randomInt(10000, 20000),
-      color: randomColor()
+      color: randomColor(),
+      character: randomElement(characters),
     })
     framebuffer.clear();
     particleSystem.render(framebuffer);

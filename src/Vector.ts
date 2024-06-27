@@ -41,3 +41,23 @@ export const project = (a: Vector, b: Vector, out: Vector) => {
   const scalar = dot(a, b) / lengthSquared(b);
   scale(b, scalar, out);
 };
+
+export const floor = (a: Vector, out: Vector) => {
+  out[0] = Math.floor(a[0]);
+  out[1] = Math.floor(a[1]);
+}
+
+export const round = (a: Vector, out: Vector) => {
+  out[0] = Math.round(a[0]);
+  out[1] = Math.round(a[1]);
+}
+
+export const max = (a: Vector, b: Vector, out: Vector) => {
+  out[0] = Math.max(a[0], b[0]);
+  out[1] = Math.max(a[1], b[1]);
+}
+
+export const min = (a: Vector, b: Vector, out: Vector) => {
+  out[0] = Math.min(a[0], b[0]);
+  out[1] = Math.min(a[1], b[1]);
+}

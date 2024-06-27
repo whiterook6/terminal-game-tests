@@ -1,4 +1,5 @@
-import { RGB, Vector } from "./types";
+import { Vector } from "./Vector";
+import { RGB } from "./types";
 
 export const randomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -6,6 +7,10 @@ export const randomInt = (min: number, max: number): number => {
 
 export const randomFloat = (min: number, max: number): number => {
   return Math.random() * (max - min) + min;
+}
+
+export const randomElement = <T>(array: T[]): T => {
+  return array[randomInt(0, array.length)];
 }
 
 let lastRandomColorIndex = -1;
@@ -42,5 +47,5 @@ export const randomColor = (): RGB => {
 
 export const randomAngle = (): Vector => {
   const angle = Math.random() * Math.PI * 2;
-  return { x: Math.cos(angle), y: Math.sin(angle) };
+  return [Math.cos(angle), Math.sin(angle)];
 }
