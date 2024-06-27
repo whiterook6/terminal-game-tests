@@ -24,7 +24,6 @@ type FrontierNode = [
   number, // cost to goal
 ];
 
-
 export class Pathfinder {
   public findPath = (start: Cell, goal: Cell, isWalkable: IsWalkable): Path => {
     const frontier = new Heap<FrontierNode>((a, b) => a[4] + a[5] - b[4] - b[5]);

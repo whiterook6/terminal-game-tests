@@ -1,7 +1,7 @@
 import ansi from "ansi";
 import { Framebuffer } from "./framebuffer/Framebuffer";
 import { ParticleSystem } from "./particles/ParticleSystem";
-import { randomColor, randomFloat, randomInt } from "./Random";
+import { randomAngle, randomColor, randomFloat, randomInt } from "./Random";
 import {buildLogger, clearLogs} from "./logging/Logging";
 
 const run = () =>{
@@ -35,7 +35,7 @@ const run = () =>{
       worldY: terminalHeight / 2,
       worldDX: randomFloat(-10, -12),
       worldDY: randomFloat(-4, -5),
-      millisecondsLeft: randomInt(1000, 3000),
+      millisecondsLeft: randomInt(10000, 20000),
       color: randomColor()
     })
     framebuffer.clear();
