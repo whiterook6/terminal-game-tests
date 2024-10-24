@@ -1,0 +1,113 @@
+export enum Symbols {
+  CHECK = '✔',
+  CIRCLE = '◯',
+  CLOUD = '☁',
+  CLOVER = '♣',
+  CLUB = '♣',
+  COG = '⚙',
+  CROSS = '✖',
+  DANGER = '☠',
+  DIAMOND = '♦',
+  EXCLAMATION = '!',
+  FACE = '☺',
+  FLAG = '⚑',
+  FLOWER = '❀',
+  GEAR = '⚙',
+  HEART = '♥',
+  LIGHTNING = '⚡',
+  MOON = '☽',
+  QUESTION = '?',
+  SKULL = '☠',
+  SNOW = '❄',
+  SPADE = '♠',
+  SQUARE = '▢',
+  STAR = '⚝',
+  SUN = '☀',
+  TRIANGLE = '△',
+  UMBRELLA = '☂',
+  WARNING = '⚠',
+};
+
+export enum Planets {
+  EARTH = '♁',
+  JUPITER = '♃',
+  MARS = '♂',
+  MERCURY = '☿',
+  NEPTUNE = '♆',
+  PLUTO = '♇',
+  SATURN = '♄',
+  SUN = '☉',
+  URANUS = '♅',
+  VENUS = '♀',
+};
+
+export enum Zodiac {
+  AQUARIUS = '♒',
+  ARIES = '♈',
+  CANCER = '♋',
+  CAPRICORN = '♑',
+  GEMINI = '♊',
+  LEO = '♌',
+  LIBRA = '♎',
+  PISCES = '♓',
+  SAGITTARIUS = '♐',
+  SCORPIO = '♏',
+  TAURUS = '♉',
+  VIRGO = '♍',
+};
+
+export enum People {
+  MALE = '♂',
+  FEMALE = '♀',
+  DUAL = '⚥'
+};
+
+export enum Arrows {
+  DOWN = '↓',
+  DOWN_LEFT = '↙',
+  DOWN_RIGHT = '↘',
+  LEFT = '←',
+  LEFT_RIGHT = '↔',
+  RIGHT = '→',
+  UP = '↑',
+  UP_DOWN = '↕',
+  UP_LEFT = '↖',
+  UP_RIGHT = '↗',
+  ZIGZAG = '↯',
+};
+
+export enum Pipes {
+  CROSS = '╬',
+  DOWN = '╩',
+  DOWN_LEFT = '╚',
+  DOWN_RIGHT = '╝',
+  H = '═',
+  LEFT = '╠',
+  LEFT_DOWN = '╚',
+  LEFT_UP = '╔',
+  RIGHT = '╣',
+  RIGHT_DOWN = '╝',
+  RIGHT_UP = '╗',
+  UP = '╦',
+  UP_LEFT = '╔',
+  UP_RIGHT = '╗',
+  V = '║',
+};
+
+export enum Lines {
+  H = '─',
+  V = '│',
+  CROSS = '┼',
+  DOWN = '┴',
+  DOWN_LEFT = '└',
+  DOWN_RIGHT = '┘',
+  LEFT = '├',
+  LEFT_DOWN = '└',
+  LEFT_UP = '┌',
+  RIGHT = '┤',
+  RIGHT_DOWN = '┘',
+  RIGHT_UP = '┐',
+  UP = '┬',
+  UP_LEFT = '┌',
+  UP_RIGHT = '┐',
+};
